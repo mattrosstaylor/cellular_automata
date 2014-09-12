@@ -1,0 +1,161 @@
+<html>
+<head>
+<script type="text/javascript">
+ 
+	var size = 100;
+	var scale = 8;
+	var canvas;
+	var ctx;
+	var grid = generateGrid();
+	var interval = 0;
+	var generation = 0;
+
+	function generateGrid() {
+		var g = new Array(size);
+
+		for (var x=0; x<size; x++) {
+				g[x] = new Array(size);
+				for (var y=0; y<size; y++) {
+					g[x][y] = 0;
+				}
+		}
+		return g;
+	}
+
+	function render() {
+		ctx.fillStyle = 'white';
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		ctx.fillStyle = "rgb(48,0,128)";
+		ctx.strokeStyle = "rgb(128,128,128)";
+
+		for (var x=0; x<size; x++) {
+			if (interval == 0) {
+				ctx.beginPath();
+				ctx.moveTo(0,x*scale);
+				ctx.lineTo(size*scale,x*scale);
+				ctx.moveTo(x*scale, 0);
+				ctx.lineTo(x*scale,size*scale);
+				ctx.stroke();
+			}
+
+			for (var y=0; y<size; y++) {
+				if (grid[x][y] == 1) {
+					ctx.fillRect(x*scale, y*scale, scale, scale);
+				}
+			}
+		}
+	}
+
+	function getCell(x,y) {
+		if (x<0) return 4;
+		if (y<0) return 4;
+		if (x>=size) return 4;
+		if (y>=size) return 4;
+
+		return grid[x][y];
+	}
+
+	function generateNext() {
+		var g = new Array(size);
+		for (var x=0; x<size; x++) {
+			g[x] = new Array(size);
+			for (var y=0; y<size; y++) {
+				var sum = getCell(x,y-1) + getCell(x,y+1) + getCell(x-1,y) + getCell(x+1, y) +getCell(x-1,y-1) + getCell(x-1,y+1) + getCell(x+1,y-1) + getCell(x+1, y+1);
+				var state = getCell(x,y);
+				if (state == 1) {
+					if (sum == 2 || sum == 3) {
+							g[x][y] = 1;
+					}
+					else {
+							g[x][y] = 0;
+					}
+				}
+				else {
+					if (sum == 3) {
+						g[x][y] = 1;
+					}
+					else {
+						g[x][y] = 0;
+					}
+				}
+			}
+		}
+		grid = g;
+	}
+
+	function next() {
+		generateNext();
+		generation++;
+		document.getElementById('count').innerHTML = ""+generation;
+		render();
+	}
+
+	function flipCell(x, y){
+		if (grid[x][y] == 1){
+			grid[x][y] = 0;
+		} else {
+			grid[x][y] = 1;
+		}
+		render();
+	}
+
+	function start() {
+		canvas = document.getElementById('c');
+		ctx = canvas.getContext('2d');
+		   
+		canvas.setAttribute('width', scale*size);
+		canvas.setAttribute('height', scale*size);
+
+		canvas.addEventListener('click', function(evt) {
+			var rect = canvas.getBoundingClientRect();
+			var mousePos = {
+				x: Math.floor((evt.clientX - rect.left)/scale),
+				y: Math.floor((evt.clientY - rect.top)/scale)
+			};
+			flipCell(mousePos.x, mousePos.y);
+		});
+
+		render();      
+	}
+
+	function play() {
+		interval = window.setInterval(next, 0);
+	}
+	function stop() {
+		window.clearInterval(interval);
+		interval = 0;
+		render();
+	}
+
+	function reset() {
+		grid = generateGrid();
+		generation = 0;
+		render();
+	}
+ 
+</script>
+ 
+<style>
+	body {
+		width: auto;
+		margin: auto;
+		text-align: center;
+	}
+	canvas {
+		border: 2px solid black;
+		cursor: crosshair;
+	}
+</style>
+</head>
+
+<body onload='start();'>
+	<canvas id='c'></canvas>
+	<br>
+	<input type='button' value='next' onclick='next();'></input>
+	<input type='button' value='play' onclick='play();'></input>
+	<input type='button' value='stop' onclick='stop();'></input>
+	<input type='button' value='reset' onclick='reset();'></input>
+	<span id='count'>0</span>
+</body>
+ 
+</html>
