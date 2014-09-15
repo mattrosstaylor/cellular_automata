@@ -8,6 +8,7 @@
 	var ctx;
 	var grid = generateGrid();
 	var interval = 0;
+	var wait = 1000;
 	var generation = 0;
 
 	function generateGrid() {
@@ -115,11 +116,23 @@
 			flipCell(mousePos.x, mousePos.y);
 		});
 
-		render();      
+		var slider = document.getElementById('gps');
+		// slider.addEventListener('change', changeSpeed);
+		slider.addEventListener('input', changeSpeed);
+
+		render();
+	}
+
+	function changeSpeed(evt){
+		wait = 1000/evt.target.value;
+		if (interval != 0){
+			window.clearInterval(interval);
+			interval = window.setInterval(next, wait);
+		}
 	}
 
 	function play() {
-		interval = window.setInterval(next, 0);
+		interval = window.setInterval(next, wait);
 	}
 	function stop() {
 		window.clearInterval(interval);
@@ -130,6 +143,7 @@
 	function reset() {
 		grid = generateGrid();
 		generation = 0;
+		document.getElementById('count').innerHTML = ""+generation;
 		render();
 	}
  
@@ -156,6 +170,8 @@
 	<input type='button' value='stop' onclick='stop();'></input>
 	<input type='button' value='reset' onclick='reset();'></input>
 	<span id='count'>0</span>
+	<br>
+	<input id='gps' type='range' value='1' max='100' min='1'></input>
 </body>
  
 </html>
